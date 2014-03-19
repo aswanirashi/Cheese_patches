@@ -1,0 +1,80 @@
+From 752ed58a860efb0cfff75d0e4c7bd8590411709d Mon Sep 17 00:00:00 2001
+From: Rashi Aswani <aswanirashi19@gmail.com>
+Date: Fri, 15 Nov 2013 17:57:13 +0530
+Subject: [PATCH] Match fullscreen mode to the proposed design
+
+https://bugzilla.gnome.org/show_bug.cgi?id=711811
+---
+ src/cheese-window.vala | 21 +++++++++++++++++++++
+ 1 file changed, 21 insertions(+)
+
+diff --git a/src/cheese-window.vala b/src/cheese-window.vala
+index d000226..fd9ba66 100644
+--- a/src/cheese-window.vala
++++ b/src/cheese-window.vala
+@@ -93,6 +93,7 @@ public class Cheese.MainWindow : Gtk.ApplicationWindow
+   private bool is_bursting;
+   private bool is_effects_selector_active;
+   private bool action_cancelled;
++  private bool was_maximized;
+ 
+   private Cheese.Camera   camera;
+   private Cheese.FileUtil fileutil;
+@@ -119,6 +120,13 @@ public class Cheese.MainWindow : Gtk.ApplicationWindow
+         GLib.Object (application: application);
+     }
+ 
++    public bool on_window_state_change_event (Gtk.Widget widget, Gdk.EventWindowState event)
++    {
++        was_maximized = (((event.new_window_state - event.changed_mask) & Gdk.WindowState.MAXIMIZED) != 0);
++        window_state_event.disconnect (on_window_state_change_event);
++        return false ;
++    }
++
+     /**
+     * Popup a context menu when right-clicking on a thumbnail.
+     *
+@@ -466,6 +474,7 @@ public class Cheese.MainWindow : Gtk.ApplicationWindow
+     fullscreen_timeout.attach (null);
+     fullscreen_timeout.set_callback (() => {buttons_area.hide ();
+                                             clear_fullscreen_timeout ();
++                                            this.fullscreen ();
+                                             return true; });
+   }
+ 
+@@ -483,6 +492,8 @@ public class Cheese.MainWindow : Gtk.ApplicationWindow
+                                                     EventMotion e)
+     {
+         clear_fullscreen_timeout ();
++        this.unfullscreen ();
++        this.maximize ();
+         buttons_area.show ();
+         set_fullscreen_timeout ();
+         return true;
+@@ -503,6 +514,7 @@ public class Cheese.MainWindow : Gtk.ApplicationWindow
+     is_fullscreen = fullscreen;
+     if (fullscreen)
+     {
++      window_state_event.connect (on_window_state_change_event);
+       if (is_wide_mode)
+       {
+         thumbnails_right.hide ();
+@@ -537,6 +549,15 @@ public class Cheese.MainWindow : Gtk.ApplicationWindow
+       buttons_area.show ();
+       viewport_widget.motion_notify_event.disconnect (fullscreen_motion_notify_callback);
+       this.unfullscreen ();
++      update_header_bar_title ();
++      if (was_maximized == true)
++      {
++         this.maximize ();
++      }
++      else
++      {
++          this.unmaximize ();
++      }
+     }
+   }
+ 
+-- 
+1.8.4.2
+

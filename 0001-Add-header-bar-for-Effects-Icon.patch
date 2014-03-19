@@ -1,0 +1,118 @@
+From 857ec9b62bd687c52f5779006b0806d3b7d7da1f Mon Sep 17 00:00:00 2001
+From: Rashi Aswani <aswanirashi19@gmail.com>
+Date: Sat, 9 Nov 2013 18:00:40 +0530
+Subject: [PATCH] Add header bar for Effects Icon
+
+https://wiki.gnome.org/GnomeGoals/HeaderBars
+https://bugzilla.gnome.org/show_bug.cgi?id=711714
+---
+ src/cheese-window.vala | 38 ++++++++++++++++++++++++++++++--------
+ 1 file changed, 30 insertions(+), 8 deletions(-)
+
+diff --git a/src/cheese-window.vala b/src/cheese-window.vala
+index cd89b56..7060165 100644
+--- a/src/cheese-window.vala
++++ b/src/cheese-window.vala
+@@ -777,7 +777,6 @@ public class Cheese.MainWindow : Gtk.ApplicationWindow
+       take_action_button_image.set_from_icon_name ("media-playback-stop-symbolic", Gtk.IconSize.BUTTON);
+       this.is_recording = true;
+       this.disable_mode_change ();
+-      header_bar.set_title (_("Stop Recording"));
+     }
+     else
+     {
+@@ -793,7 +792,6 @@ public class Cheese.MainWindow : Gtk.ApplicationWindow
+       take_action_button_image.set_from_icon_name ("camera-web-symbolic", Gtk.IconSize.BUTTON);
+       this.is_recording = false;
+       this.enable_mode_change ();
+-      header_bar.set_title (_("Record a video"));
+     }
+   }
+ 
+@@ -826,7 +824,6 @@ public class Cheese.MainWindow : Gtk.ApplicationWindow
+       this.disable_mode_change ();
+       // FIXME: Set the effects action to be inactive.
+       take_action_button.tooltip_text = _("Stop taking pictures");
+-      header_bar.set_title (_("Stop taking pictures"));
+       burst_take_photo ();
+ 
+       /* Use the countdown duration if it is greater than the burst delay, plus
+@@ -850,7 +847,6 @@ public class Cheese.MainWindow : Gtk.ApplicationWindow
+       is_bursting = false;
+       this.enable_mode_change ();
+       take_action_button.tooltip_text = _("Take multiple photos");
+-      header_bar.set_title (_("Take multiple photos"));
+       burst_count = 0;
+       fileutil.reset_burst ();
+       GLib.Source.remove (burst_callback_id);
+@@ -1050,6 +1046,7 @@ public class Cheese.MainWindow : Gtk.ApplicationWindow
+ 
+         camera.toggle_effects_pipeline (active);
+         setup_effects_page_switch_sensitivity ();
++        update_header_bar_title ();
+     }
+ 
+   /**
+@@ -1301,30 +1298,55 @@ public class Cheese.MainWindow : Gtk.ApplicationWindow
+         current_mode = mode;
+ 
+         set_resolution (current_mode);
+-
++        update_header_bar_title ();
+         timeout_layer.hide ();
+ 
+         switch (current_mode)
+         {
+             case MediaMode.PHOTO:
+                 take_action_button.tooltip_text = _("Take a photo using a webcam");
+-                header_bar.set_title (_("Take a photo"));
+                 break;
+ 
+             case MediaMode.VIDEO:
+                 take_action_button.tooltip_text = _("Record a video using a webcam");
+-                header_bar.set_title (_("Record a video"));
+                 timeout_layer.text = "00:00:00";
+                 timeout_layer.show ();
+                 break;
+ 
+             case MediaMode.BURST:
+                 take_action_button.tooltip_text = _("Take multiple photos using a webcam");
+-                header_bar.set_title (_("Take multiple photos"));
+                 break;
+         }
+     }
+ 
++     /**
++     * Set the header bar .
++     *
++     */
++    public void update_header_bar_title ()
++    {
++        if (is_effects_selector_active)
++        {
++            header_bar.set_title (_("Effects"));
++        }
++        else
++        {
++            switch (current_mode)
++            {
++                case MediaMode.PHOTO:
++                    header_bar.set_title (_("Take a photo"));
++                    break;
++
++                case MediaMode.VIDEO:
++                    header_bar.set_title (_("Record a video"));
++                    break;
++    
++                case MediaMode.BURST:
++                    header_bar.set_title (_("Take multiple photos"));
++                    break;
++            }
++        }
++    }
+     /**
+      * Set the camera.
+      *
+-- 
+1.8.4.2
+

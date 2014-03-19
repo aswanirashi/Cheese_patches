@@ -1,0 +1,36 @@
+From c29f292b3fb71defffc55ec5508b970a7acf368d Mon Sep 17 00:00:00 2001
+From: Rashi Aswani <aswanirashi19@gmail.com>
+Date: Tue, 12 Nov 2013 19:40:28 +0530
+Subject: [PATCH] Fixed deprecated warning in
+ cheese_main_window_on_countdown_toggle
+
+https://bugzilla.gnome.org/show_bug.cgi?id=712151
+---
+ src/cheese-window.vala | 11 -----------
+ 1 file changed, 11 deletions(-)
+
+diff --git a/src/cheese-window.vala b/src/cheese-window.vala
+index 3c93917..d000226 100644
+--- a/src/cheese-window.vala
++++ b/src/cheese-window.vala
+@@ -618,17 +618,6 @@ public class Cheese.MainWindow : Gtk.ApplicationWindow
+   }
+ 
+   /**
+-   * Toggle whether the countdown is active.
+-   *
+-   * @param action the action that emitted the signal
+-   */
+-  [CCode (instance_pos = -1)]
+-  public void on_countdown_toggle (ToggleAction action)
+-  {
+-    settings.set_boolean ("countdown", action.active);
+-  }
+-
+-  /**
+    * The method to call when the countdown is finished.
+    */
+   private void finish_countdown_callback ()
+-- 
+1.8.4.2
+

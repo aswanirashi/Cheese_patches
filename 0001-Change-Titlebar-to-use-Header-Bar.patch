@@ -1,0 +1,115 @@
+From 546fb87295f2c05dcf8b1fac7ed3b5880f268fe4 Mon Sep 17 00:00:00 2001
+From: Rashi Aswani <aswanirashi19@gmail.com>
+Date: Sat, 9 Nov 2013 05:18:02 +0530
+Subject: [PATCH] Change Titlebar to use Header Bar
+
+https://wiki.gnome.org/GnomeGoals/HeaderBars
+https://bugzilla.gnome.org/post_bug.cgi
+---
+ data/cheese-main-window.ui |  9 +++++++++
+ src/cheese-window.vala     | 10 ++++++++++
+ 2 files changed, 19 insertions(+)
+
+diff --git a/data/cheese-main-window.ui b/data/cheese-main-window.ui
+index 40eb47d..27614d7 100644
+--- a/data/cheese-main-window.ui
++++ b/data/cheese-main-window.ui
+@@ -1,6 +1,15 @@
+ <?xml version="1.0"?>
+ <interface>
+   <requires lib="gtk+" version="2.16"/>
++  <object class ="GtkHeaderBar" id="header-bar">
++    <property name="visible">True</property>
++    <property name="can_focus">False</property>
++    <property name="title" translatable="yes">Take a photo</property>
++    <property name="show-close-button">True</property>
++    <style>
++      <class name="titlebar"/>
++    </style>
++  </object>
+   <object class="GtkGrid" id="mainbox_normal">
+     <property name="orientation">vertical</property>
+     <property name="events">GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK</property>
+diff --git a/src/cheese-window.vala b/src/cheese-window.vala
+index 2ae2a80..bd6cd77 100644
+--- a/src/cheese-window.vala
++++ b/src/cheese-window.vala
+@@ -47,6 +47,7 @@ public class Cheese.MainWindow : Gtk.ApplicationWindow
+   private Gtk.Builder    gtk_builder;
+   private Clutter.Script clutter_builder;
+ 
++  private Gtk.HeaderBar header_bar;
+   private GLib.Settings settings;
+ 
+   private Gtk.Widget       thumbnails;
+@@ -777,6 +778,7 @@ public class Cheese.MainWindow : Gtk.ApplicationWindow
+       take_action_button_image.set_from_icon_name ("media-playback-stop-symbolic", Gtk.IconSize.BUTTON);
+       this.is_recording = true;
+       this.disable_mode_change ();
++      header_bar.set_title (_("Stop Recording"));
+     }
+     else
+     {
+@@ -792,6 +794,7 @@ public class Cheese.MainWindow : Gtk.ApplicationWindow
+       take_action_button_image.set_from_icon_name ("camera-web-symbolic", Gtk.IconSize.BUTTON);
+       this.is_recording = false;
+       this.enable_mode_change ();
++      header_bar.set_title (_("Record a video"));
+     }
+   }
+ 
+@@ -824,6 +827,7 @@ public class Cheese.MainWindow : Gtk.ApplicationWindow
+       this.disable_mode_change ();
+       // FIXME: Set the effects action to be inactive.
+       take_action_button.tooltip_text = _("Stop taking pictures");
++      header_bar.set_title (_("Stop taking pictures"));
+       burst_take_photo ();
+ 
+       /* Use the countdown duration if it is greater than the burst delay, plus
+@@ -847,6 +851,7 @@ public class Cheese.MainWindow : Gtk.ApplicationWindow
+       is_bursting = false;
+       this.enable_mode_change ();  
+       take_action_button.tooltip_text = _("Take multiple photos");
++      header_bar.set_title (_("Take multiple photos"));
+       burst_count = 0;
+       fileutil.reset_burst ();
+       GLib.Source.remove (burst_callback_id);
+@@ -1209,6 +1214,7 @@ public class Cheese.MainWindow : Gtk.ApplicationWindow
+     effects_toggle_button             = gtk_builder.get_object ("effects_toggle_button") as Gtk.ToggleButton;
+     leave_fullscreen_button           = gtk_builder.get_object ("leave_fullscreen_button") as Gtk.Button;
+     buttons_area = gtk_builder.get_object ("buttons_area") as Gtk.Grid;
++    header_bar = gtk_builder.get_object ("header-bar") as Gtk.HeaderBar;
+ 
+     countdown_action         = gtk_builder.get_object ("countdown") as Gtk.Action;
+ 
+@@ -1260,6 +1266,7 @@ public class Cheese.MainWindow : Gtk.ApplicationWindow
+ 
+     this.add (main_vbox);
+     main_vbox.show_all ();
++    this.set_titlebar(header_bar);
+ 
+     /* needed for the sizing tricks in set_wide_mode (allocation is 0
+      * if the widget is not realized */
+@@ -1304,16 +1311,19 @@ public class Cheese.MainWindow : Gtk.ApplicationWindow
+         {
+             case MediaMode.PHOTO:
+                 take_action_button.tooltip_text = _("Take a photo using a webcam");
++                header_bar.set_title (_("Take a photo"));
+                 break;
+ 
+             case MediaMode.VIDEO:
+                 take_action_button.tooltip_text = _("Record a video using a webcam");
++                header_bar.set_title (_("Record a video"));
+                 timeout_layer.text = "00:00:00";
+                 timeout_layer.show ();
+                 break;
+ 
+             case MediaMode.BURST:
+                 take_action_button.tooltip_text = _("Take multiple photos using a webcam");
++                header_bar.set_title (_("Take multiple photos"));
+                 break;
+         }
+     }
+-- 
+1.8.4.2
+
